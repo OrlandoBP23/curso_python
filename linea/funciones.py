@@ -29,4 +29,4 @@ if __name__ == '__main__':
     if test_linea() == 3:
         print('everything aight')
     else:
-        print('sum went wrong')
+        print('sum went wrongg')
