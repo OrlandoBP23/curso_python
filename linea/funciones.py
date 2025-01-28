@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+
+
 def Calcular_Y(x:float,m:float,b:float)->float:
     '''
     Calcula el valor de y en una linea recta 
@@ -6,7 +9,18 @@ def Calcular_Y(x:float,m:float,b:float)->float:
     b: interseccion de y
     regresa el valor de y
     '''
-    return m*x+b
+    return m*x
+
+def grafica_linea(X:list,Y:list,m:float,b:float):
+    '''Grafica una linea recta con valores de x y 
+    Regresa:nada
+    '''
+    plt.plot(X,Y)
+    plt.title(f'Linea con pendiente {m} y ordenada al origen {b}')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.show()
+
 
 def main():
     m=2
