@@ -21,6 +21,7 @@ def busca_en_diccionario(diccionario:dict, palabra:str)->list:
 
 if __name__ == '__main__':
     archivo_csv = 'booklist2000.csv'
+    diccionario_id = crea_diccionario(lista_libros,'id')
     lista_libros = lee_archivo_csv(archivo_csv)
     diccionario_libros = crea_diccionario(lista_libros,'title')
     resutaldo = busca_en_diccionario(diccionario_libros, 'rebels')
@@ -28,3 +29,4 @@ if __name__ == '__main__':
     diccionario_autores = crea_diccionario(lista_libros,'author')
     resutaldo = busca_en_diccionario(diccionario_autores, 'James')
     print(resutaldo)
+    diccionario_id = crea_diccionario(lista_libros,'id')
