@@ -22,7 +22,7 @@ class Actor:
             'fecha_nacimiento': self.fecha_nacimiento,
             'ciudad_nacimiento': self.ciudad_nacimiento,
             'url_imagen': self.url_imagen,
-            'username': self.username
+            'username': self.username,
         }   
 
 class Pelicula():
@@ -40,7 +40,6 @@ class Pelicula():
             'id_pelicula': self.id_pelicula,
             'titulo_pelicula': self.titulo_pelicula,
             'fecha_lanzamiento': self.fecha_lanzamiento.strftime("%Y-%m-%d"),
-            'ciudad_nacimiento': self.ciudad_nacimiento,
             'url_poster': self.url_poster
         } 
     def __str__(self):
@@ -49,18 +48,20 @@ class Pelicula():
 
 class Relacion():
     '''Clase para manejar la informacion de una Relacion'''
-    def __init__(self, id_relacion, id_pelicula, id_estrella):
+    def __init__(self, id_relacion, id_pelicula, id_estrella, personaje):
         '''Inicializa la clase con los datos de la relacion'''
         self.id_relacion      = int(id_relacion)
         self.id_pelicula  = int(id_pelicula)
         self.id_estrella = int(id_estrella)
+        self.personaje = personaje
 
     def to_dict(self):
         ''' Devuelve un diccionario con la información de la relacion '''
         return {
             'id_relacion': self.id_relacion,
             'id_pelicula': self.id_pelicula,
-            'id_estrella': self.id_estrella
+            'id_estrella': self.id_estrella,
+            'personaje': self.personaje
         }  
 
 class User():
@@ -98,6 +99,7 @@ class SistemaCine():
         self.idx_pelicula = 0
         self.idx_relacion = 0
         self.usuario_actual = None
+     
 
 
     def cargar_csv(self, archivo, clase):
@@ -124,6 +126,15 @@ class SistemaCine():
             self.idx_pelicula = max(self.peliculas.keys()) if self.peliculas else 0
         elif clase == Relacion:
             self.idx_relacion = max(self.relaciones.keys()) if self.relaciones else 0
+    
+    def guardar_csv(self, archivo, objetos):
+        if not objetos:
+            return
+        with open(archivo, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=next(iter(objetos.values())).to_dict().keys())
+            writer.writeheader()
+            for obj in objetos.values():
+                writer.writerow(obj.to_dict())
 
     def obtener_peliculas_por_actor(self, id_estrella):
         '''Devuelve las peliculas en las que ha participado un actor'''
@@ -137,10 +148,10 @@ class SistemaCine():
     
     def login(self, username, password):
         '''Verifica si el usuario y contraseña son correctos'''
-        print(f"Attempting login for username: {username}")  # Debugging print statement
+        print(f"Intentando hacer login a : {username}")  # Debugging print statement
         if username in self.usuarios:
             user = self.usuarios[username]
-            print(f"User found: {user.username}")  # Debugging print statement
+            print(f"Usuario encontrado: {user.username}")  # Debugging print statement
             if user.password == hashlib.sha256(password.encode()).hexdigest():
                 self.usuario_actual = user
                 print("Login exitoso")  # Debugging print statement
@@ -150,8 +161,43 @@ class SistemaCine():
         else:
             print("Usuario no encontrado")  # Debugging print statement
         return False
+    
+    def agregar_actor(self,nombre,fecha_nacimiento,ciudad_nacimiento,url_imagen):
+        ''' Agrega un actor a la base de datos '''
+        if self.usuario_actual is not None:
+            self.idx_actor += 1
+            actor = Actor(self.idx_actor,nombre,fecha_nacimiento,ciudad_nacimiento,url_imagen,self.usuario_actual.username)
+            self.actores[self.idx_actor] = actor
 
+    def agregar_pelicula(self, titulo_pelicula, fecha_lanzamiento, url_poster):
+        if self.usuario_actual:
+            new_id = self.idx_pelicula + 1
+            self.idx_pelicula = new_id
+            pelicula = Pelicula(new_id, titulo_pelicula, fecha_lanzamiento, url_poster)
+            self.peliculas[pelicula.id_pelicula] = pelicula
+
+    def agregar_relacion(self, id_pelicula, id_estrella, personaje):
+        if self.usuario_actual:
+            new_id = self.idx_relacion + 1
+            self.idx_relacion = new_id
+            relacion = Relacion(new_id, id_pelicula, id_estrella, personaje)
+            self.relaciones[relacion.id_relacion] = relacion
+
+
+    def agregar_usuario(self, username, nombre_completo, email, password):
+        if self.usuario_actual:
+            user = User(username, nombre_completo, email, password)
+            self.usuarios[user.username] = user
+
+    def obtener_personaje_por_actor(self, id_estrella):
+        '''Devuelve una lista de los personajes interpretados por un actor en sus películas'''
+        personajes = [rel.personaje for rel in self.relaciones.values() if rel.id_estrella == id_estrella]
+        return personajes
       
+    def obtener_personaje_por_pelicula(self, id_pelicula):
+        '''Devuelve una lista de los personajes interpretados por un actor en sus películas'''
+        personajes = [rel.personaje for rel in self.relaciones.values() if rel.id_pelicula == id_pelicula]
+        return personajes
 
 if __name__ == '__main__':
     archivo = "datos/actores.csv"
@@ -179,4 +225,14 @@ if __name__ == '__main__':
     print(u.password)
     exito = sistema.login('obp', 'Geovane12')
     print(exito)
-    
+    if (exito):
+        print(f"Usuario actual: {sistema.usuario_actual.username}")
+        sistema.agregar_pelicula('The Godfather', '1972-03-24', 'https://www.imdb.com/title/tt0068646/mediaviewer/rm4285938944/')
+        sistema.agregar_relacion(69,36,'Rita')
+        sistema.agregar_usuario('messi', 'Lionel Messi', 'messi@gmail.com','12345')
+        sistema.guardar_csv(archivo_peliculas, sistema.peliculas)
+        sistema.guardar_csv(archivo_relaciones, sistema.relaciones)
+        sistema.guardar_csv(archivo_usuarios, sistema.usuarios)
+    else:
+        print('Usuario o contraseña incorrectos')
+        print('listo!')
