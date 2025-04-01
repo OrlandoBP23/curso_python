@@ -223,7 +223,7 @@ if __name__ == '__main__':
     u = sistema.usuarios['obp']
     print(u.username)
     print(u.password)
-    exito = sistema.login('obp', 'Geovane12')
+    exito = sistema.login('obp', 'tu_contraseña')
     print(exito)
     if (exito):
         print(f"Usuario actual: {sistema.usuario_actual.username}")
